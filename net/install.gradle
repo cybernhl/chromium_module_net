@@ -1,0 +1,38 @@
+apply plugin: 'com.github.dcendents.android-maven'
+group = rootProject.ext.FCMpomUtilsGroupId
+version = rootProject.ext.FCMversionName
+def pomArtifactId = rootProject.ext.FCMpomUtilsArtifactId                          // Maven Group ID for the artifact
+
+install {
+    repositories.mavenInstaller {
+        // This generates POM. xml  with proper parameters
+        pom {
+            project {
+                inceptionYear '2017'
+                packaging 'aar'
+                name pomArtifactId
+                description 'Gif Player Library'
+                url rootProject.ext.scmUrl
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'lzyzsd'
+                        name 'hi大头鬼hi'
+                        email 'bruceinpeking@gmail.com'
+                    }
+                }
+                scm {
+                    connection rootProject.ext.scmConnectionUrl
+                    developerConnection rootProject.ext.scmConnectionUrl
+                    url rootProject.ext.scmUrl
+                }
+            }
+        }
+    }
+}
+

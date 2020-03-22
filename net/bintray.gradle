@@ -1,0 +1,87 @@
+apply plugin: 'com.jfrog.bintray'
+//http://stackoverflow.com/questions/43291448/artifact-or-version-defined-in-the-pom-file-do-not-match
+group = rootProject.ext.FCMpomUtilsGroupId
+version = rootProject.ext.FCMversionName
+def pomArtifactId = rootProject.ext.FCMpomUtilsArtifactId
+
+tasks.withType(Javadoc).all { enabled = false }
+
+task javadoc(type: Javadoc) {
+    options.encoding = "UTF-8"
+    options.charSet = 'UTF-8'
+    source = android.sourceSets.main.java.srcDirs
+    println android.getBootClasspath()
+    println File.pathSeparator
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    failOnError false
+}
+
+if (project.hasProperty("android")) { // Android libraries
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        baseName = pomArtifactId
+        from android.sourceSets.main.java.srcDirs
+    }
+
+    task androidJavadocs(type: Javadoc) {
+        source = android.sourceSets.main.java.srcDirs
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        baseName = pomArtifactId
+        from javadoc.destinationDir
+    }
+
+} else { // Java libraries
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+    tasks.withType(Compile) { //Here is pure java
+        options.encoding = 'UTF-8'
+    }
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+// Bintray
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+    configurations = ['archives']
+    pkg {
+        repo = rootProject.ext.mainrepo
+        name = pomArtifactId
+//        userOrg = properties.getProperty("bintray.org")
+//        desc = libraryDescription
+        websiteUrl = rootProject.ext.scmUrl
+        vcsUrl = rootProject.ext.scmConnectionUrl
+        licenses = ["Apache-2.0"]
+        publish = true
+        publicDownloadNumbers = true
+        version {
+//            desc = libraryDescription
+//            gpg {
+//                sign = true //Determines whether to GPG sign the files. The default is false
+//                passphrase = properties.getProperty("bintray.gpg.password")
+//                name = rootProject.ext.versionName
+//                //Optional. The passphrase for GPG signing'
+//            }
+        }
+    }
+}
